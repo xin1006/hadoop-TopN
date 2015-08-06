@@ -1,0 +1,39 @@
+plugins {
+  id "java"
+  id "application"
+  id "idea"
+}
+
+// HADOOP 2.7.0 might work with java 1.8
+if (!JavaVersion.current().java8Compatible) {
+  throw new IllegalStateException("Must be built at least with Java 1.8")
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile "org.apache.hadoop:hadoop-client:2.7.1"
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+// Application starting class
+//---------------------------------------------------------------------------------------------------------------------
+
+mainClassName = "mr.Main"
+
+//---------------------------------------------------------------------------------------------------------------------
+// Execute hadoop locally without any hadoop server running
+//---------------------------------------------------------------------------------------------------------------------
+// Before change hadoop configuration to run locally
+//  $HADOOP_INSTALL/etc/hadoop/core-site.xml
+//  set fs.default.name to file:///
+task runLocally(type: Exec, dependsOn: jar) {
+  workingDir "."
+
+  commandLine "hadoop", "jar", "$buildDir/libs/${project.name}.jar", "$mainClassName", "$projectDir/src/test/resources/accesslog_input", "$buildDir/output"
+}
